@@ -1,0 +1,17 @@
+# Editor backup files
+*~
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Yocto temporary files
+tmp/
+sstate-cache/
+downloads/
+cache/
+
+# Logs
+*.log

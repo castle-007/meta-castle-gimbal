@@ -1,0 +1,20 @@
+MACHINE = "raspberrypi3"
+DISTRO = "castle-gimbal"
+
+require conf/machine/include/castle-rpi3.inc
+
+LICENSE_FLAGS_ACCEPTED:append = " synaptics-killswitch"
+
+EXTRA_IMAGE_FEATURES ?= "debug-tweaks"
+
+PACKAGE_CLASSES ?= "package_rpm"
+USER_CLASSES ?= "buildstats"
+PATCHERSOLVE = "noop"
+
+INHERIT += "own-mirrors"
+SOURCE_MIRROR_URL = "file://${COREBASE}/../dl-mirrors"
+BB_GENERATE_MIRROR_TARBALLS = "1"
+SSTATE_MIRRORS = "file://.* file://${COREBASE}/../sstate-cache/PATH"
+SSTATE_DIR = "${TOPDIR}/sstate-cache"
+
+CONF_VERSION = "2"

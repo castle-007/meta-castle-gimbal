@@ -1,0 +1,86 @@
+This README file contains information on the contents of the meta-castle-gimbal layer.
+
+# meta-castle-gimbal
+Yocto Scarthgap layer for a Raspberry Pi 3 based gimbal controller image.
+
+## Target
+- Yocto release: scarthgap
+- Machine: raspberrypi3
+- Distro: castle-gimbal
+- Image: castle-gimbal-image
+
+## Hardware
+- Raspberry Pi 3B
+- MPU-6050 over I2C
+- Two BLDC driver control signals over PWM
+- USB-to-UART debug console
+- Wi-Fi
+- Camera over V4L2
+
+## Layer Dependencies
+Expected workspace layout:
+
+```text
+yocto-rpi/
+  poky/
+  meta-openembedded/
+  meta-raspberrypi/
+  meta-castle-gimbal/
+
+Required layers:
+poky/meta
+poky/meta-poky
+poky/meta-yocto-bsp
+meta-openembedded/meta-oe
+meta-openembedded/meta-python
+meta-raspberrypi
+meta-castle-gimbal
+
+## Build
+From the workspace root:
+
+$ cd ~/yocto-rpi
+$ TEMPLATECONF=../meta-castle-gimbal/conf/templates/castle-gimbal source poky/oe-init-build-env build-castle
+$ bitbake castle-gimbal-image
+
+## Flash SD Card
+Check the SD card device carefully:
+
+$ lsblk
+
+Example for /dev/sdX:
+$ bzcat tmp/deploy/images/raspberrypi3/castle-gimbal-image-raspberrypi3.rootfs.wic.bz2 | sudo dd of=/dev/sdX bs=4M conv=fsync status=progress
+$ sync
+
+[ --- Board checklist --- ]
+## Verified Interfaces
+I2C:
+root# ls /dev/i2c*
+root# i2cdetect -y 1
+Expected MPU-6050 address:
+0x68
+
+PWM:
+root# ls /sys/class/pwm
+pwmchip0
+root# cat /sys/class/pwm/pwmchip0/npwm
+2
+
+Camera:
+root# v4l2-ctl -d /dev/video0 --list-formats-ext
+root# v4l2-ctl -d /dev/video0 \
+  --set-fmt-video=width=640,height=480,pixelformat=MJPG \
+  --stream-mmap \
+  --stream-count=1 \
+  --stream-to=/tmp/capture.mjpg
+
+Wi-Fi:
+root# ip link set wlan0 up
+root# iw dev wlan0 scan | grep SSID
+
+## Notes
+- The image enables I2C for the MPU-6050.
+- The image enables two PWM channels using dtoverlay=pwm-2chan.
+- The pwm-2chan.dtbo overlay is included in the boot partition through RPI_KERNEL_DEVICETREE_OVERLAYS.
+- The image includes v4l-utils, i2c-tools, iw, and wpa-supplicant for hardware validation.
+- Application code for motor control, recording, and video streaming will be added later.

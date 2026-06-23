@@ -1,0 +1,3 @@
+# build directory 를 만들거나 진입할 때 oe-init-build-env 가 보여주는 안내문.
+Build the image with:
+  bitbake castle-gimbal-image
