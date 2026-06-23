@@ -74,9 +74,28 @@ root# v4l2-ctl -d /dev/video0 \
   --stream-count=1 \
   --stream-to=/tmp/capture.mjpg
 
-Wi-Fi:
-root# ip link set wlan0 up
-root# iw dev wlan0 scan | grep SSID
+## Wi-Fi Auto Connect
+The image installs a helper service:
+
+```bash
+root# systemctl status castle-wifi-connect
+
+The image does not include a real Wi-Fi password. Copy the example file on the Raspberry Pi:
+
+root# cp /etc/wpa_supplicant.conf.example /etc/wpa_supplicant.conf
+root# nano /etc/wpa_supplicant.conf
+Edit the SSID and password:
+network={
+    ssid="YOUR_WIFI_NAME"
+    psk="YOUR_WIFI_PASSWORD"
+}
+
+Restart the service:
+root# systemctl restart castle-wifi-connect
+
+Check the connection:
+root# iw wlan0 link
+root# ip addr show wlan0
 
 ## Notes
 - The image enables I2C for the MPU-6050.
