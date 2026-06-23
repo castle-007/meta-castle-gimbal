@@ -1,0 +1,13 @@
+[Unit]
+Description=Castle Wi-Fi connection helper
+After=systemd-modules-load.service
+Wants=network.target
+Before=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/castle-wifi-connect wlan0
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -13,4 +13,5 @@ IMAGE_INSTALL += " \
 	i2c-tools \
 	iw \
 	wpa-supplicant \
+	castle-wifi-config \
 "

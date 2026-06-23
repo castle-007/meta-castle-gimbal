@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -eu
+
+IFACE="${1:-wlan0}"
+CONF="/etc/wpa_supplicant.conf"
+
+if [ ! -f "$CONF" ]; then
+    echo "Missing $CONF"
+    echo "Copy /etc/wpa_supplicant.conf.example to $CONF and edit SSID/PSK."
+    exit 0
+fi
+
+ip link set "$IFACE" up
+
+if ! pgrep -f "wpa_supplicant.*-i $IFACE" >/dev/null 2>&1; then
+    wpa_supplicant -B -i "$IFACE" -c "$CONF"
+fi
+
+for i in $(seq 1 20); do
+    if iw "$IFACE" link | grep -q '^Connected to'; then
+        udhcpc -i "$IFACE" -q
+        exit 0
+    fi
+    sleep 1
+done
+
+echo "Wi-Fi connection timeout on $IFACE"
+exit 1
