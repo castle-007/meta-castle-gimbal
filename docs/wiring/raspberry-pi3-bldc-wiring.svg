@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1800" height="1120" viewBox="0 0 1800 1120">
+  <defs>
+    <style>
+      text { font-family: "Noto Sans CJK KR", "NanumGothic", sans-serif; fill: #17202a; }
+      .title { font-size: 36px; font-weight: 700; }
+      .h2 { font-size: 25px; font-weight: 700; }
+      .label { font-size: 20px; font-weight: 600; }
+      .small { font-size: 17px; }
+      .tiny { font-size: 14px; }
+      .warn { fill: #b42318; font-weight: 700; }
+      .wire-pwm { fill: none; stroke: #1769aa; stroke-width: 8; }
+      .wire-gnd { fill: none; stroke: #202124; stroke-width: 8; }
+      .wire-5v { fill: none; stroke: #e67e22; stroke-width: 6; }
+      .wire-power { fill: none; stroke: #c62828; stroke-width: 8; }
+      .callout { fill: #fff; stroke: #34495e; stroke-width: 2; }
+    </style>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1769aa"/>
+    </marker>
+    <marker id="arrowBlack" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#202124"/>
+    </marker>
+  </defs>
+
+  <rect width="1800" height="1120" fill="#f7f9fb"/>
+  <text x="70" y="62" class="title">Raspberry Pi 3 - BLDC 드라이버 2개 제어 배선도</text>
+  <text x="70" y="96" class="small warn">전원을 끈 상태에서 배선하세요. 외부 모터 전원은 Raspberry Pi에 연결하지 않습니다.</text>
+
+  <!-- Raspberry Pi 3 board -->
+  <g transform="translate(65,145)">
+    <rect x="0" y="0" width="650" height="820" rx="18" fill="#4f9b58" stroke="#275e32" stroke-width="5"/>
+    <text x="35" y="55" class="h2" fill="#fff">Raspberry Pi 3</text>
+    <text x="35" y="83" class="small" fill="#fff">USB / Ethernet 포트가 아래쪽인 방향</text>
+
+    <rect x="165" y="210" width="270" height="240" rx="8" fill="#d7dce0" stroke="#5f6368" stroke-width="3"/>
+    <text x="230" y="340" class="label">BCM2837</text>
+    <rect x="185" y="705" width="120" height="115" fill="#c6cbd0" stroke="#5f6368" stroke-width="3"/>
+    <rect x="330" y="705" width="120" height="115" fill="#c6cbd0" stroke="#5f6368" stroke-width="3"/>
+    <text x="185" y="690" class="small" fill="#fff">USB / LAN</text>
+
+    <!-- 40-pin header: pin 1 top-left, pin 2 top-right -->
+    <rect x="500" y="70" width="100" height="650" rx="6" fill="#30343b"/>
+    <text x="472" y="48" class="small" fill="#fff">40핀 GPIO</text>
+    <g id="header-pins">
+      <!-- Rows are 31px apart. Odd left, even right. -->
+      <circle cx="527" cy="95" r="10" fill="#f4c542"/><circle cx="573" cy="95" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="126" r="10" fill="#f4c542"/><circle cx="573" cy="126" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="157" r="10" fill="#f4c542"/><circle cx="573" cy="157" r="13" fill="#111"/>
+      <circle cx="527" cy="188" r="10" fill="#f4c542"/><circle cx="573" cy="188" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="219" r="10" fill="#f4c542"/><circle cx="573" cy="219" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="250" r="10" fill="#f4c542"/><circle cx="573" cy="250" r="13" fill="#1769aa"/>
+      <circle cx="527" cy="281" r="10" fill="#f4c542"/><circle cx="573" cy="281" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="312" r="10" fill="#f4c542"/><circle cx="573" cy="312" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="343" r="10" fill="#f4c542"/><circle cx="573" cy="343" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="374" r="10" fill="#f4c542"/><circle cx="573" cy="374" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="405" r="10" fill="#f4c542"/><circle cx="573" cy="405" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="436" r="10" fill="#f4c542"/><circle cx="573" cy="436" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="467" r="10" fill="#f4c542"/><circle cx="573" cy="467" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="498" r="10" fill="#f4c542"/><circle cx="573" cy="498" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="529" r="10" fill="#f4c542"/><circle cx="573" cy="529" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="560" r="10" fill="#f4c542"/><circle cx="573" cy="560" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="591" r="10" fill="#f4c542"/><circle cx="573" cy="591" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="622" r="13" fill="#1769aa"/><circle cx="573" cy="622" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="653" r="10" fill="#f4c542"/><circle cx="573" cy="653" r="10" fill="#f4c542"/>
+      <circle cx="527" cy="684" r="10" fill="#f4c542"/><circle cx="573" cy="684" r="10" fill="#f4c542"/>
+    </g>
+
+    <rect x="10" y="105" width="465" height="70" rx="6" class="callout"/>
+    <text x="30" y="135" class="label">물리 핀 6: GND</text>
+    <text x="30" y="160" class="small">두 드라이버와 공통 접지</text>
+    <path d="M475 140 L560 157" class="wire-gnd" marker-end="url(#arrowBlack)"/>
+
+    <rect x="10" y="485" width="465" height="70" rx="6" class="callout"/>
+    <text x="30" y="515" class="label">물리 핀 12: GPIO18 / PWM0</text>
+    <text x="30" y="540" class="small">드라이버 1의 VSP 제어</text>
+    <path d="M475 520 L560 250" class="wire-pwm" marker-end="url(#arrowBlue)"/>
+
+    <rect x="10" y="575" width="465" height="70" rx="6" class="callout"/>
+    <text x="30" y="605" class="label">물리 핀 35: GPIO19 / PWM1</text>
+    <text x="30" y="630" class="small">드라이버 2의 VSP 제어</text>
+    <path d="M475 610 L514 622" class="wire-pwm" marker-end="url(#arrowBlue)"/>
+  </g>
+
+  <!-- Driver 1 -->
+  <g transform="translate(850,135)">
+    <rect x="0" y="0" width="870" height="410" rx="8" fill="#fff" stroke="#8a949e" stroke-width="3"/>
+    <text x="25" y="38" class="h2">BLDC 드라이버 1</text>
+    <image x="25" y="60" width="390" height="270" preserveAspectRatio="xMidYMid meet"
+           xlink:href="bldc-driver.webp"/>
+    <text x="25" y="365" class="tiny">참조한 실제 드라이버 보드 사진</text>
+
+    <rect x="445" y="60" width="395" height="245" rx="6" fill="#eef3f7" stroke="#64727e" stroke-width="2"/>
+    <text x="465" y="92" class="label">제어 커넥터</text>
+    <text x="465" y="125" class="small">1 BRK  - 다음 단계</text>
+    <text x="465" y="155" class="small">2 DIR  - 다음 단계</text>
+    <text x="465" y="185" class="small warn">3 FG   - 5V 출력, Pi 직결 금지</text>
+    <text x="465" y="215" class="small" fill="#1769aa">4 VSP  ← PWM0 출력</text>
+    <text x="465" y="245" class="small">5 GND  ← 공통 GND</text>
+    <text x="465" y="275" class="small" fill="#e67e22">6 5V   → 74AHCT125 전원만</text>
+
+    <rect x="445" y="320" width="395" height="65" rx="6" fill="#fff4e5" stroke="#e67e22" stroke-width="2"/>
+    <text x="465" y="348" class="label">74AHCT125</text>
+    <text x="465" y="374" class="tiny">GPIO18 → 1A(2), 1Y(3) → VSP, /OE(1)·GND(7) → GND, VCC(14) → 드라이버 5V</text>
+  </g>
+
+  <!-- Driver 2 -->
+  <g transform="translate(850,590)">
+    <rect x="0" y="0" width="870" height="410" rx="8" fill="#fff" stroke="#8a949e" stroke-width="3"/>
+    <text x="25" y="38" class="h2">BLDC 드라이버 2</text>
+    <image x="25" y="60" width="390" height="270" preserveAspectRatio="xMidYMid meet"
+           xlink:href="bldc-driver.webp"/>
+    <text x="25" y="365" class="tiny">참조한 실제 드라이버 보드 사진</text>
+
+    <rect x="445" y="60" width="395" height="245" rx="6" fill="#eef3f7" stroke="#64727e" stroke-width="2"/>
+    <text x="465" y="92" class="label">제어 커넥터</text>
+    <text x="465" y="125" class="small">1 BRK  - 다음 단계</text>
+    <text x="465" y="155" class="small">2 DIR  - 다음 단계</text>
+    <text x="465" y="185" class="small warn">3 FG   - 5V 출력, Pi 직결 금지</text>
+    <text x="465" y="215" class="small" fill="#1769aa">4 VSP  ← PWM1 출력</text>
+    <text x="465" y="245" class="small">5 GND  ← 공통 GND</text>
+    <text x="465" y="275" class="small" fill="#e67e22">6 5V   → 74AHCT125 전원만</text>
+
+    <rect x="445" y="320" width="395" height="65" rx="6" fill="#fff4e5" stroke="#e67e22" stroke-width="2"/>
+    <text x="465" y="348" class="label">74AHCT125</text>
+    <text x="465" y="374" class="tiny">GPIO19 → 1A(2), 1Y(3) → VSP, /OE(1)·GND(7) → GND, VCC(14) → 드라이버 5V</text>
+  </g>
+
+  <!-- Interconnect overview -->
+  <path d="M715 395 C770 395 785 350 850 350" class="wire-pwm"/>
+  <text x="720" y="375" class="small" fill="#1769aa">PWM0</text>
+  <path d="M715 755 C770 755 785 805 850 805" class="wire-pwm"/>
+  <text x="720" y="785" class="small" fill="#1769aa">PWM1</text>
+  <path d="M715 315 L790 315 L790 910 L850 910" class="wire-gnd"/>
+  <path d="M790 455 L850 455" class="wire-gnd"/>
+  <text x="710" y="295" class="small">공통 GND</text>
+
+  <!-- Warnings and legend -->
+  <rect x="65" y="1005" width="1655" height="82" rx="6" fill="#fff0f0" stroke="#b42318" stroke-width="2"/>
+  <text x="90" y="1037" class="label warn">주의</text>
+  <text x="165" y="1037" class="small">외부 모터 전원은 드라이버의 VCC/GND에만 연결합니다. Pi 또는 74AHCT125에 연결하면 손상됩니다.</text>
+  <text x="165" y="1068" class="small">두 드라이버의 제어용 5V 출력은 서로 연결하지 않습니다. 모터 U/V/W와 홀 센서 배선은 별도로 연결합니다.</text>
+</svg>

@@ -1,0 +1,14 @@
+[Unit]
+Description=Castle Gimbal RTSP Video Server
+After=network-online.target
+Wants=network-online.target
+Conflicts=castle-gimbal.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/castle-rtsp-server
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

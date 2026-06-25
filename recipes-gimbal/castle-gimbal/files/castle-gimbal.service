@@ -1,0 +1,13 @@
+[Unit]
+Description=Castle Gimbal Controller
+After=dev-gpiochip0.device
+Wants=dev-gpiochip0.device
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/castle-gimbal
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
