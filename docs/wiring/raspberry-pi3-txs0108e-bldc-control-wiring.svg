@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #111827; }
+      .subtitle { font: 16px Arial, sans-serif; fill: #374151; }
+      .box-title { font: 700 20px Arial, sans-serif; fill: #111827; }
+      .pin { font: 15px Arial, sans-serif; fill: #111827; }
+      .note { font: 14px Arial, sans-serif; fill: #374151; }
+      .small { font: 12px Arial, sans-serif; fill: #4b5563; }
+      .box { fill: #f9fafb; stroke: #111827; stroke-width: 2; rx: 8; }
+      .pi { fill: #eef2ff; stroke: #3730a3; stroke-width: 2; rx: 8; }
+      .level { fill: #ecfdf5; stroke: #047857; stroke-width: 2; rx: 8; }
+      .driver { fill: #fff7ed; stroke: #c2410c; stroke-width: 2; rx: 8; }
+      .pinbox { fill: white; stroke: #6b7280; stroke-width: 1; rx: 4; }
+      .wire-pwm { stroke: #2563eb; stroke-width: 4; fill: none; }
+      .wire-dir { stroke: #dc2626; stroke-width: 4; fill: none; }
+      .wire-gnd { stroke: #111827; stroke-width: 4; fill: none; }
+      .wire-33 { stroke: #16a34a; stroke-width: 4; fill: none; }
+      .wire-5v { stroke: #f59e0b; stroke-width: 4; fill: none; }
+      .label-bg { fill: white; opacity: 0.92; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="900" fill="#ffffff"/>
+
+  <text x="40" y="48" class="title">Raspberry Pi 3 - TXS0108E - BLDC Control Wiring</text>
+  <text x="40" y="78" class="subtitle">Control signals only. Motor power VCC/GND and motor U/V/W phase wiring are separate high-current connections.</text>
+
+  <rect x="40" y="130" width="300" height="610" class="pi"/>
+  <text x="70" y="170" class="box-title">Raspberry Pi 3</text>
+  <text x="70" y="197" class="note">3.3V GPIO side</text>
+
+  <rect x="70" y="235" width="230" height="44" class="pinbox"/>
+  <text x="88" y="263" class="pin">Pin 1  - 3.3V</text>
+
+  <rect x="70" y="295" width="230" height="44" class="pinbox"/>
+  <text x="88" y="323" class="pin">Pin 2  - 5V</text>
+
+  <rect x="70" y="355" width="230" height="44" class="pinbox"/>
+  <text x="88" y="383" class="pin">Pin 6/9 - GND</text>
+
+  <rect x="70" y="415" width="230" height="44" class="pinbox"/>
+  <text x="88" y="443" class="pin">GPIO18 PWM0 - Pin 12</text>
+
+  <rect x="70" y="475" width="230" height="44" class="pinbox"/>
+  <text x="88" y="503" class="pin">GPIO19 PWM1 - Pin 35</text>
+
+  <rect x="70" y="535" width="230" height="44" class="pinbox"/>
+  <text x="88" y="563" class="pin">GPIO20 DIR Roll - Pin 38</text>
+
+  <rect x="70" y="595" width="230" height="44" class="pinbox"/>
+  <text x="88" y="623" class="pin">GPIO21 DIR Pitch - Pin 40</text>
+
+  <rect x="500" y="120" width="360" height="640" class="level"/>
+  <text x="535" y="160" class="box-title">TXS0108E Level Shifter</text>
+  <text x="535" y="187" class="note">A side = 3.3V, B side = 5V</text>
+
+  <rect x="535" y="225" width="125" height="40" class="pinbox"/>
+  <text x="555" y="251" class="pin">VCCA</text>
+  <rect x="700" y="225" width="125" height="40" class="pinbox"/>
+  <text x="720" y="251" class="pin">VCCB</text>
+
+  <rect x="535" y="285" width="125" height="40" class="pinbox"/>
+  <text x="555" y="311" class="pin">GND</text>
+  <rect x="700" y="285" width="125" height="40" class="pinbox"/>
+  <text x="720" y="311" class="pin">OE</text>
+
+  <rect x="535" y="390" width="125" height="40" class="pinbox"/>
+  <text x="555" y="416" class="pin">A1</text>
+  <rect x="700" y="390" width="125" height="40" class="pinbox"/>
+  <text x="720" y="416" class="pin">B1</text>
+
+  <rect x="535" y="450" width="125" height="40" class="pinbox"/>
+  <text x="555" y="476" class="pin">A2</text>
+  <rect x="700" y="450" width="125" height="40" class="pinbox"/>
+  <text x="720" y="476" class="pin">B2</text>
+
+  <rect x="535" y="510" width="125" height="40" class="pinbox"/>
+  <text x="555" y="536" class="pin">A3</text>
+  <rect x="700" y="510" width="125" height="40" class="pinbox"/>
+  <text x="720" y="536" class="pin">B3</text>
+
+  <rect x="535" y="570" width="125" height="40" class="pinbox"/>
+  <text x="555" y="596" class="pin">A4</text>
+  <rect x="700" y="570" width="125" height="40" class="pinbox"/>
+  <text x="720" y="596" class="pin">B4</text>
+
+  <rect x="1010" y="140" width="330" height="270" class="driver"/>
+  <text x="1040" y="180" class="box-title">Roll BLDC Driver</text>
+  <text x="1040" y="207" class="note">Control port</text>
+  <rect x="1040" y="235" width="240" height="38" class="pinbox"/>
+  <text x="1058" y="260" class="pin">VSP - speed PWM input</text>
+  <rect x="1040" y="285" width="240" height="38" class="pinbox"/>
+  <text x="1058" y="310" class="pin">DIR - direction input</text>
+  <rect x="1040" y="335" width="240" height="38" class="pinbox"/>
+  <text x="1058" y="360" class="pin">GND - control ground</text>
+
+  <rect x="1010" y="500" width="330" height="270" class="driver"/>
+  <text x="1040" y="540" class="box-title">Pitch BLDC Driver</text>
+  <text x="1040" y="567" class="note">Control port</text>
+  <rect x="1040" y="595" width="240" height="38" class="pinbox"/>
+  <text x="1058" y="620" class="pin">VSP - speed PWM input</text>
+  <rect x="1040" y="645" width="240" height="38" class="pinbox"/>
+  <text x="1058" y="670" class="pin">DIR - direction input</text>
+  <rect x="1040" y="695" width="240" height="38" class="pinbox"/>
+  <text x="1058" y="720" class="pin">GND - control ground</text>
+
+  <path class="wire-33" d="M300 257 C390 257 430 245 535 245"/>
+  <rect x="350" y="231" width="145" height="22" class="label-bg"/>
+  <text x="358" y="247" class="small">3.3V to VCCA</text>
+
+  <path class="wire-5v" d="M300 317 C410 317 460 245 700 245"/>
+  <rect x="398" y="286" width="125" height="22" class="label-bg"/>
+  <text x="406" y="302" class="small">5V to VCCB</text>
+
+  <path class="wire-33" d="M300 257 C420 220 610 180 762 285"/>
+  <rect x="608" y="198" width="95" height="22" class="label-bg"/>
+  <text x="616" y="214" class="small">OE to 3.3V</text>
+
+  <path class="wire-gnd" d="M300 377 C405 377 450 305 535 305"/>
+  <rect x="383" y="339" width="118" height="22" class="label-bg"/>
+  <text x="391" y="355" class="small">Pi GND common</text>
+
+  <path class="wire-pwm" d="M300 437 C405 437 455 410 535 410"/>
+  <rect x="355" y="410" width="150" height="22" class="label-bg"/>
+  <text x="363" y="426" class="small">GPIO18 PWM0 to A1</text>
+
+  <path class="wire-pwm" d="M825 410 C910 410 935 254 1040 254"/>
+  <rect x="872" y="318" width="132" height="22" class="label-bg"/>
+  <text x="880" y="334" class="small">B1 to Roll VSP</text>
+
+  <path class="wire-pwm" d="M300 497 C405 497 455 470 535 470"/>
+  <rect x="355" y="470" width="150" height="22" class="label-bg"/>
+  <text x="363" y="486" class="small">GPIO19 PWM1 to A2</text>
+
+  <path class="wire-pwm" d="M825 470 C935 470 925 614 1040 614"/>
+  <rect x="872" y="536" width="144" height="22" class="label-bg"/>
+  <text x="880" y="552" class="small">B2 to Pitch VSP</text>
+
+  <path class="wire-dir" d="M300 557 C405 557 455 530 535 530"/>
+  <rect x="352" y="530" width="148" height="22" class="label-bg"/>
+  <text x="360" y="546" class="small">GPIO20 Roll DIR to A3</text>
+
+  <path class="wire-dir" d="M825 530 C915 530 940 304 1040 304"/>
+  <rect x="872" y="410" width="132" height="22" class="label-bg"/>
+  <text x="880" y="426" class="small">B3 to Roll DIR</text>
+
+  <path class="wire-dir" d="M300 617 C405 617 455 590 535 590"/>
+  <rect x="346" y="590" width="158" height="22" class="label-bg"/>
+  <text x="354" y="606" class="small">GPIO21 Pitch DIR to A4</text>
+
+  <path class="wire-dir" d="M825 590 C935 590 930 664 1040 664"/>
+  <rect x="872" y="620" width="144" height="22" class="label-bg"/>
+  <text x="880" y="636" class="small">B4 to Pitch DIR</text>
+
+  <path class="wire-gnd" d="M660 305 C920 305 930 354 1040 354"/>
+  <path class="wire-gnd" d="M660 305 C920 305 930 714 1040 714"/>
+  <rect x="765" y="326" width="190" height="22" class="label-bg"/>
+  <text x="773" y="342" class="small">Common GND to both drivers</text>
+
+  <rect x="40" y="785" width="1300" height="78" class="box"/>
+  <text x="65" y="815" class="box-title">Notes</text>
+  <text x="65" y="842" class="note">BLDC control VSP expects 1-20 kHz PWM. Driver description says below 1.0V or below 20% duty may shut down.</text>
+  <text x="65" y="864" class="note">DIR high is CCW and DIR low is CW according to the supplied pin description. Swap logic in software if motor direction is reversed.</text>
+</svg>

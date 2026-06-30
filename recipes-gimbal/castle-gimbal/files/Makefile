@@ -1,13 +1,14 @@
  CC ?= gcc
 CFLAGS ?= -O2 -Wall -Wextra
 LDFLAGS ?=
-LDLIBS += -lgpiod
+LDLIBS += -lgpiod -lm
 
 TARGET = castle-gimbal
 
 SRCS = \
 	src/main.c \
-	src/camera.c
+	src/camera.c \
+	src/mpu6050.c
 
 OBJS = $(SRCS:.c=.o)
 

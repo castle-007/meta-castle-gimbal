@@ -19,6 +19,8 @@ SRC_URI = " \
     file://src/main.c \
     file://src/camera.c \
     file://src/camera.h \
+    file://src/mpu6050.c \
+    file://src/mpu6050.h \
 	file://castle-gimbal.service \
 "
 
