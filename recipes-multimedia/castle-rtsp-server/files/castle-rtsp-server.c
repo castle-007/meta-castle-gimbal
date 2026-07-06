@@ -66,15 +66,17 @@ int main(int argc, char *argv[])
 	}
 
 	gst_rtsp_media_factory_set_launch( factory,
-			"( v4l2src device=" CAMERA_DEVICE " ! "
-			"video/x-h264,width=1280,height=72-,framerate=30/1 ! "
-			"h264parse ! rtph264pay name=pay0 pt=96 config-interval=1 )");
+			"( v4l2src device=" CAMERA_DEVICE " do-timestamp=true io-mode=2 ! "
+			"video/x-h264,width=1280,height=720,framerate=30/1 ! "
+			"h264parse config-interval=1 ! "
+			"rtph264pay name=pay0 pt=96 config-interval=1 mtu=1200 )");
 
 	/*
 	 * 여러 클라이언트가 하나의 카메라 파이프라인을 공유한다.
 	 */
-	gst_rtsp_media_factory_set_shared(factory, TRUE);
-
+//	gst_rtsp_media_factory_set_shared(factory, FALSE);
+	// debug source
+	gst_rtsp_media_factory_set_latency(factory, 50);
 	/*
 	 * 생성한 영상 파이프라인을 /gimbal 경로에 등록한다.
 	 * 이 함수가 factory의 소유권을 mounts로 넘긴다.

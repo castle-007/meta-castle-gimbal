@@ -23,4 +23,7 @@ IMAGE_INSTALL += " \
 	gstreamer1.0-plugins-good-video4linux2 \
 	gstreamer1.0-plugins-good-rtp \
 	gstreamer1.0-plugins-bad-videoparsersbad \
+	gstreamer1.0-plugins-good-rtpmanager \
+	gstreamer1.0-plugins-good-udp \
+	gstreamer1.0-plugins-base-app \
 "
