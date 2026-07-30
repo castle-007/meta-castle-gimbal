@@ -15,9 +15,11 @@ IMAGE_INSTALL += " \
 	wpa-supplicant \
 	castle-wifi-config \
 	castle-gimbal-controller \
+	castle-rtsp-server \
+	castle-video-mode-button \
+	castle-power-button \
 	packagegroup-core-ssh-openssh \
 	libgpiod-tools \
-	castle-rtsp-server \
 	gstreamer1.0 \
 	gstreamer1.0-rtsp-server \
 	gstreamer1.0-plugins-good-video4linux2 \

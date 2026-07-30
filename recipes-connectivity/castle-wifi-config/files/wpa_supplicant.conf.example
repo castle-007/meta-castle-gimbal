@@ -3,6 +3,6 @@ update_config=1
 country=KR
 
 network={
-    ssid="YOUR_WIFI_NAME"
-    psk="YOUR_WIFI_PASSWORD"
+    ssid="PM24_PSK"
+    psk="1277454247"
 }

@@ -1,0 +1,13 @@
+[Unit]
+Description=Castle Video Mode Button Service
+After=basic.target castle-gimbal-control.service
+Wants=castle-gimbal-control.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/castle-video-mode-button
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

@@ -9,7 +9,7 @@ RDEPENDS:${PN} += "libgpiod"
 
 inherit systemd
 
-SYSTEMD_SERVICE:${PN} = "castle-gimbal.service"
+SYSTEMD_SERVICE:${PN} = "castle-gimbal-control.service castle-record.service"
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
@@ -22,6 +22,8 @@ SRC_URI = " \
     file://src/mpu6050.c \
     file://src/mpu6050.h \
 	file://castle-gimbal.service \
+	file://castle-gimbal-control.service \
+	file://castle-record.service \
 "
 
 S = "${WORKDIR}"
@@ -38,6 +40,9 @@ do_install() {
 	install -d ${D}${systemd_system_unitdir}
 
 	# 서비스 파일을 읽기 가능한 권한으로 설치한다.
-	install -m 0644 ${WORKDIR}/castle-gimbal.service \
-		${D}${systemd_system_unitdir}/castle-gimbal.service
+	install -m 0644 ${WORKDIR}/castle-gimbal-control.service \
+		${D}${systemd_system_unitdir}/castle-gimbal-control.service
+	
+	install -m 0644 ${WORKDIR}/castle-record.service \
+		${D}${systemd_system_unitdir}/castle-record.service
 }

@@ -1,0 +1,14 @@
+[Unit]
+Description=Castle Gimbal Local Recorder
+After=dev-gpiochip0.device
+Wants=dev-gpiochip0.device
+Conflicts=castle-rtsp-server.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/castle-gimbal --record
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

@@ -7,7 +7,7 @@ dtparam=i2c_arm=on\n\
 dtparam=i2c1=on\n\
 dtoverlay=miniuart-bt\n\
 uart_2ndstage=1\n\
-dtoverlay=pwm-2chan\n\
+dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4\n\
 camera_auto_detect=1\n\
 start_x=1\n\
 gpu_mem=128\n\

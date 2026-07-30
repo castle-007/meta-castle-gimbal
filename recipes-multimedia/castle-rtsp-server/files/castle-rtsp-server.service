@@ -2,7 +2,7 @@
 Description=Castle Gimbal RTSP Video Server
 After=network-online.target
 Wants=network-online.target
-Conflicts=castle-gimbal.service
+Conflicts=castle-record.service
 
 [Service]
 Type=simple

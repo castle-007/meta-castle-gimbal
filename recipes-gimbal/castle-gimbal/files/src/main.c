@@ -20,6 +20,8 @@
 #define PWM_PERIOD_NS 100000
 #define BUTTON_GPIO_CHIP "/dev/gpiochip0"
 #define BUTTON_GPIO_OFFSET 17
+/* 녹화 확인 LED */
+#define	RECORD_LED_GPIO	24
 /* 녹화 디렉토리 지정. */
 #define RECORDING_DIRECTORY	"/root/recordings"
 
@@ -34,9 +36,10 @@
 #define GIMBAL_PITCH_KP 1.0f
 
 /* 모터가 갑자기 세게 움직이는 것을 방지하기 위해 PWM duty 값을 30%로 제한 */
-#define	GIMBAL_STOP_DUTY_PERCENT	0.0f
-#define GIMBAL_MIN_RUN_DUTY_PERCENT 30.0f
-#define GIMBAL_MAX_DUTY_PERCENT		60.0f
+#define	GIMBAL_STOP_DUTY_PERCENT		0.0f
+#define GIMBAL_MIN_RUN_DUTY_PERCENT 	40.0f
+#define GIMBAL_MAX_DUTY_PERCENT			60.0f
+#define	GIMBAL_PWM_TEST_DUTY_PERCENT	40.0f
 
 /* gimbal motor 떨림 방지. */
 #define GIMBAL_DEADBAND_DEG 1.0f
@@ -111,6 +114,55 @@ struct gimbal_motor_direction {
 	int roll;
 	int pitch;
 };
+
+/*
+ * 녹화 버튼 상태 저장.
+ */
+struct record_button_state {
+	int previous_pressed;
+};
+
+/* castle-gimbal 실행 모드 */
+enum castle_run_mode {
+	RUN_MODE_CONTROL,
+	RUN_MODE_RECORD,
+};
+
+/* Record 상태 LED */
+enum record_led_state {
+	RECORD_LED_OFF, 
+	RECORD_LED_WAITING,
+	RECORD_LED_READY,
+	RECORD_LED_RECORDING,
+};
+
+/*
+ * 실행 인자를 보고 동작 모드를 결정
+ * --control : MPU6050 + PWM + DIR 짐벌 제어만 실행
+ * --record  : GPIO17 버튼 + 카메라 녹화만 실행
+ */
+static int parse_run_mode(int argc, char *argv[], enum castle_run_mode *mode)
+{
+	if (mode == NULL)	return -1;
+	if (argc != 2) {
+		fprintf(stderr, "usage: castle-gimbal --control | --record\n");
+		return -1;
+	}
+
+	if (strcmp(argv[1], "--control") == 0) {
+		*mode = RUN_MODE_CONTROL;
+		return 0;
+	}
+	if (strcmp(argv[1], "--record") == 0) {
+		*mode = RUN_MODE_RECORD;
+		return 0;
+	}
+
+	fprintf(stderr, "usage: castle-gimbal --control | --record\n");
+
+	return -1;
+}
+
 /*
  * 녹화 파일을 저장할 디렉터리가 없으면 생성한다.
  */
@@ -427,6 +479,57 @@ static void close_record_button(struct button_gpio *button)
 		gpiod_chip_close(button->chip);
 		button->chip = NULL;
 	}
+}
+
+/*
+ * 녹화 버튼이 눌렸을 때 녹화를 시작 or 정지한다.
+ * 이미 녹화 중이면 녹화를 정지하고,
+ * 녹화 중이 아니면 저장 공간을 확인한 뒤 새 파일 이름으로 녹화를 시작한다.
+ */
+static int handle_record_button_press(void)
+{
+	char recording_path[256];
+
+	if (camera_is_recording()) {
+		if (camera_stop_recording() < 0)	return -1;
+
+		return 0;
+	}
+
+	if (!has_recording_space()) {
+		fprintf(stderr, "castle-gimbal: recording rejected due to low space!\n");
+		return 0;
+	}
+
+	if (make_recording_path(recording_path, sizeof(recording_path)) < 0)
+		return -1;
+	if (camera_start_recording(recording_path) < 0)
+		return -1;
+
+	return 0;
+}
+
+/**/
+static int process_record_button(struct button_gpio *button,
+								 struct record_button_state *state)
+{
+	int pressed;
+
+	if (button == NULL)	return -1;
+	if (state == NULL)	return -1;
+
+	pressed = read_record_button(button);
+	if (pressed < 0)	return -1;
+
+	if (pressed && !state->previous_pressed) {
+		printf("castle-gimbal: record button pressed\n");
+
+		if (handle_record_button_press() < 0)	return -1;
+	}
+
+	state->previous_pressed = pressed;
+
+	return 0;
 }
 
 /*
@@ -1074,14 +1177,24 @@ static int run_gimbal_control_once(
 	struct gimbal_control_output control_output;
 	struct gimbal_pwm_output pwm_output;
 	struct gimbal_motor_direction direction;
+	int retry;
 
-	if (mpu6050_read(&sensor_data) < 0)
+	for (retry = 0; retry < 3; retry++) {
+		if (mpu6050_read(&sensor_data) == 0)
+			break;
+		usleep(10000);
+	}
+	if (retry == 3) {
+		fprintf(stderr, "gimbal: mpu6050_read failed after retries!\n");
 		return -1;
+	}
 
 	mpu6050_apply_gyro_calibration(&sensor_data, calibration);
 
-	if (mpu6050_calculate_angle(&sensor_data, &sensor_angle) < 0)
+	if (mpu6050_calculate_angle(&sensor_data, &sensor_angle) < 0) {
+		fprintf(stderr, "gimbal: mpu6050_calculate_angle failed\n");
 		return -1;
+	}
 
 	calculate_gimbal_error(&sensor_angle, &error);
 	calculate_gimbal_control_output(&error, &control_output);
@@ -1091,8 +1204,10 @@ static int run_gimbal_control_once(
 	/* 모터 방향 결정. */
 	apply_gimbal_direction_invert(&direction);
 
-	if (apply_gimbal_motor_direction(roll_dir_gpio, pitch_dir_gpio, &direction) < 0)
+	if (apply_gimbal_motor_direction(roll_dir_gpio, pitch_dir_gpio, &direction) < 0) {
+		fprintf(stderr, "gimbal: apply_gimbal_motor_direction failed\n");
 		return -1;
+	}
 
 	if (print_log)
 		printf("gimbal: angle roll=%.2f pitch=%.2f deg, "
@@ -1105,8 +1220,10 @@ static int run_gimbal_control_once(
 				direction.roll,
 				direction.pitch);
 
-	if (apply_gimbal_pwm_output(&pwm_output) < 0)
+	if (apply_gimbal_pwm_output(&pwm_output) < 0) {
+		fprintf(stderr, "gimbal: apply_gimbal_pwm_output failed\n");
 		return -1;
+	}
 
 	return 0;
 }
@@ -1146,7 +1263,9 @@ static int run_gimbal_control_test_loop(
 static int run_gimbal_control_loop(
 	const struct mpu6050_calibration *calibration,
 	struct output_gpio *roll_dir_gpio,
-	struct output_gpio *pitch_dir_gpio)
+	struct output_gpio *pitch_dir_gpio,
+	struct button_gpio *record_button,
+	struct record_button_state *record_button_state)
 {
 	int loop_count = 0;
 
@@ -1160,6 +1279,12 @@ static int run_gimbal_control_loop(
 									print_log) < 0)
 			return -1;
 
+		if (record_button != NULL && record_button_state != NULL) {
+			if (process_record_button(record_button,
+								  record_button_state) < 0)
+				return -1;
+		}
+
 		loop_count++;
 		usleep(GIMBAL_CONTROL_INTERVAL_US);
 	}
@@ -1167,14 +1292,207 @@ static int run_gimbal_control_loop(
 	return 0;
 }
 
-int main(void)
+/*
+ * 짐벌 제어 전용 모드.
+ * 이 모드는 MPU6050, PWM0/PWM1, DIR GPIO20/GPIO21만 사용한다.
+ * 카메라와 GPIO17 녹화 버튼은 사용하지 않는다.
+ */
+static int run_control_mode(void)
 {
+	struct output_gpio roll_dir_gpio = {0};
+	struct output_gpio pitch_dir_gpio = {0};
+	int result = 0;
+
+	if (configure_pwm_channel(0) < 0)	return 1;
+	if (configure_pwm_channel(1) < 0)	return 1;
+
+	printf("castle-gimbal: PWM initialization complete\n");
+
+	if (apply_pwm_output(0, 0.0f) < 0)	return 1;
+	if (apply_pwm_output(1, 0.0f) < 0)	return 1;
+
+	if (init_output_gpio(&roll_dir_gpio,
+						GIMBAL_ROLL_DIR_GPIO,
+						"castle-roll-dir") < 0) {
+		release_output_gpio(&roll_dir_gpio);
+		return 1;
+	}
+
+	if (init_output_gpio(&pitch_dir_gpio,
+						GIMBAL_PITCH_DIR_GPIO,
+						"castle-pitch-dir") < 0) {
+		release_output_gpio(&pitch_dir_gpio);
+		return 1;
+	}
+
+	if (mpu6050_init() == 0) {
+		struct mpu6050_calibration calibration;
+
+		if (mpu6050_calibrate_gyro(&calibration, 100) == 0) {
+			print_mpu6050_once(&calibration);
+			if (run_gimbal_control_loop(&calibration,
+										&roll_dir_gpio,
+										&pitch_dir_gpio,
+										NULL, NULL) < 0) {
+				fprintf(stderr, "gimbal: control loop failed\n");
+				result = 1;
+			}
+		} else result = 1;
+	} else result = 1;
+
+	force_disable_pwm_channel(0);
+	force_disable_pwm_channel(1);
+	release_output_gpio(&roll_dir_gpio);
+	release_output_gpio(&pitch_dir_gpio);
+	mpu6050_close();
+
+	return result;
+}
+
+/* 녹화 상태 반영 LED */
+static int update_record_led(struct output_gpio *record_led_gpio,
+							 enum record_led_state led_state,
+							 struct timespec *led_last_toggle,
+							 int *led_output_on)
+{
+	struct timespec now;
+	long elapsed_ms;
+
+	if (record_led_gpio == NULL || led_last_toggle == NULL || led_output_on == NULL)	return -1;
+	if (clock_gettime(CLOCK_MONOTONIC, &now) < 0)	return -1;
+
+	switch (led_state) {
+		case RECORD_LED_OFF:
+			if (*led_output_on) {
+				if (set_output_gpio(record_led_gpio, 0) < 0)	return -1;
+				*led_output_on = 0;
+			}
+			return 0;
+		case RECORD_LED_READY:
+			if (!*led_output_on) {
+				if (set_output_gpio(record_led_gpio, 1) < 0)	return -1;
+				*led_output_on = 1;
+			}
+			return 0;
+		case RECORD_LED_WAITING:
+		case RECORD_LED_RECORDING:
+			elapsed_ms = (now.tv_sec - led_last_toggle->tv_sec) * 1000L;
+			elapsed_ms += (now.tv_nsec - led_last_toggle->tv_nsec) / 1000000L;
+
+			if ( (led_state == RECORD_LED_WAITING && elapsed_ms >= 500) ||
+				 (led_state == RECORD_LED_RECORDING && elapsed_ms >= 100) ) {
+				*led_output_on = !*led_output_on;
+				if (set_output_gpio(record_led_gpio, *led_output_on ? 1 : 0) < 0)	return -1;
+				*led_last_toggle = now;
+			}
+			return 0;
+	}
+	return -1;
+}
+
+static int run_record_mode(void)
+{
+	enum record_led_state led_state;
+	struct timespec led_last_toggle;
+	struct button_gpio record_button = {0};
+	struct record_button_state record_button_state = {0};
+	struct output_gpio	record_led_gpio = {0};
+	int result = 0;
+	int led_output_on;	// 현재 LED GPIO 출력 상태 저장.
+
+	/* initialize local value */
+	led_state = RECORD_LED_OFF;
+	led_output_on = 0;
+	led_last_toggle.tv_sec = 0;
+	led_last_toggle.tv_nsec = 0;
+
+	if (init_record_button(&record_button) < 0)	return 1;
+	if (init_output_gpio(&record_led_gpio, RECORD_LED_GPIO, "castle-record-led") < 0)	return 1;
+	/* Record Led 초기화 */
+	if (set_output_gpio(&record_led_gpio, 0) < 0)	return 1;
+
+	led_state = RECORD_LED_WAITING;
+
+	for (int i = 0; i<10 ; i++) {
+		if (update_record_led(&record_led_gpio, led_state,
+							  &led_last_toggle, &led_output_on) < 0) {
+			result = 1;
+			goto cleanup;
+		}
+		usleep(100000);
+	}
+	
+	/* recording data 저장 디렉토리 확인 */
+	if (prepare_recording_directory() < 0) {
+		result = 1;
+		goto cleanup;
+	}
+
+	led_state = RECORD_LED_READY;
+
+	while (!stop_requested) {
+		if (process_record_button(&record_button,
+								  &record_button_state) < 0) {
+			result = 1;
+			goto cleanup;
+		}
+
+		if (camera_is_recording())
+			led_state = RECORD_LED_RECORDING;
+		else
+			led_state = RECORD_LED_READY;
+
+		if (update_record_led(&record_led_gpio, led_state,
+							  &led_last_toggle, &led_output_on) < 0) {
+			result = 1;
+			break;
+		}
+
+		usleep(GIMBAL_CONTROL_INTERVAL_US);
+	}
+
+cleanup:
+	if (camera_is_recording()) 
+		camera_stop_recording(); 
+	
+
+	set_output_gpio(&record_led_gpio, 0);
+	close_record_button(&record_button);
+
+	return result;
+}
+
+int main(int argc, char *argv[])
+{
+	enum castle_run_mode run_mode;
+
+	printf("castle-gimbal: start\n");
+	if (parse_run_mode(argc, argv, &run_mode) < 0)	return 1;
+
+	signal(SIGINT, handle_stop_signal);
+	signal(SIGTERM, handle_stop_signal);
+
+	if (run_mode == RUN_MODE_CONTROL)
+		return run_control_mode();
+
+	if (run_mode == RUN_MODE_RECORD)
+		return run_record_mode();
+
+	return 1;
+}
+#if 0
+int main(int argc, char *argv[])
+{
+	enum castle_run_mode run_mode;
 	struct button_gpio record_button = {0};
 	struct output_gpio roll_dir_gpio = {0};
 	struct output_gpio pitch_dir_gpio = {0};
+	struct record_button_state record_button_state = {0};
 	char recording_path[256];
 
 	printf("castle-gimbal: start\n");
+
+	if (parse_run_mode(argc, argv, &run_mode) < 0)	return 1;
 
 	/*
 	 * GPIO17 영상 녹화버튼으로 설정.(INPUT)
@@ -1211,10 +1529,14 @@ int main(void)
 		if (mpu6050_calibrate_gyro(&calibration, 100) == 0) {
 			/* MPU6050 초기화 후 한 번 출력한다 */
 			print_mpu6050_once(&calibration);
+			/* recording folder 생성 */
+			if (prepare_recording_directory() < 0)	return -1;
 #if 1
 			if (run_gimbal_control_loop(&calibration,
 										&roll_dir_gpio,
-										&pitch_dir_gpio) < 0)
+										&pitch_dir_gpio,
+										&record_button,
+										&record_button_state) < 0)
 				fprintf(stderr, "gimbal: control loop failed\n");
 #else
 			if (run_gimbal_control_test_loop(&calibration,
@@ -1343,3 +1665,4 @@ int main(void)
 
 	return 0;
 }
+#endif
